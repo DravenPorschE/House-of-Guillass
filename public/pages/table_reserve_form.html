@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Reservation Form</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/table-reservation.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="logo">House of <span>Guillas</span></h1>
+            <nav>
+                <svg id="menu" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
+                <ul id="nav-list">
+                    <li id="homepage"><a href="../index.html">Home</a></li>
+                    <li id="order"><a href="../index.html#order">Order Food</a></li>
+                    <li id="reserve"><a href="pages/table_reserve_form.html" class="active">Reservation</a></li>
+                    <li id="view-order" class="hidden"><a>View Order</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <h2 class="page-title">Table Reservation Form</h2>
+
+        <form id="reservation-form" class="form-grid">
+            <div class="form-section">
+                <label for="name">Full Name</label>
+                <p class="sub-label">The full name of the guest who made the reservation.</p>
+                <input name="name" type="text" id="res-name" placeholder="e.g. Juan D. Cruz" required>
+            </div>
+
+            <div class="form-section">
+                <label for="">Contact Number</label>
+                <p class="sub-label">The contact number so we can connect to you whenever the table is ready</p>
+                <input id="res-contact" type="text" placeholder="e.g. 09123456789" maxlength="11" name="contact_number" required>
+            </div>
+
+            <div class="form-section">
+                <label for="date">Date and Time of Reservation</label>
+                <p class="sub-label">The date of the reservation</p>
+                <div class="date-time">
+                    <input name="date" type="date" id="res-date" required>
+                    <input name="date" type="time" id="res-time" required>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <label for="number_guests">Number of Guests</label>
+                <p class="sub-label">The number of guests who will dine to the restaurant</p>
+                <input name="number_guests" placeholder="e.g. 6" type="number" id="res-guests" placeholder="Guests" min="1" required>
+            </div>
+
+            <button type="submit" class="btn-primary">Confirm Booking</button>
+        </form>
+
+        <p class="sub-label">Notice: Not showing up during the scheduled table reservation is subjected to be void and non-negotiable</p>
+    </main>
+
+    <div class="modal-popup">
+        <div class="modal-panel">
+            <div class="close-container">
+                <button class="close-popup">Close</button>
+            </div>
+            <h2 class="reservation-label">Table is reserved successully!</h2>
+            <h2 class="reservation-message">Here is your reservation number:</h2>
+            <h1 class="reservation-number">#00000</h1>
+            <p class="sub-label">Please present this to the frontdesk clerk to get your table</p>
+            <p class="sub-label">You can take a picture or take note of your table number</p>
+        </div>
+    </div>
+
+    <div class="order-modal-popup">
+        <div class="order-modal-panel">
+            <div class="close-container">
+                <button class="close-popup">Close</button>
+            </div>
+            <h2 class="reservation-label">Your order is on the way!</h2>
+            <h2 class="reservation-message">Here is your order number:</h2>
+            <h1 class="order-reservation-number">#00000</h1>
+            <p class="sub-label">
+                <span class="sub-label-address">Not set</span>
+            </p>
+            <p class="sub-label">Please present this to the rider to get your order</p>
+            <p class="sub-label">You can take a screenshot or take note of your order number</p>
+        </div>
+    </div>
+
+    <script src="../js/script.js?v=1"></script>
+</body>
+</html>

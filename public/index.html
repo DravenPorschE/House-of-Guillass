@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House of Guillas Resto-Cafe</title>
+    <link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="logo">House of <span>Guillas</span></h1>
+            <nav>
+                <svg id="menu" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
+                <ul id="nav-list">
+                    <li id="homepage"><a class="active" href="#">Home</a></li>
+                    <li id="order"><a href="#order">Order Food</a></li>
+                    <li id="reserve"><a href="pages/table_reserve_form.html">Reservation</a></li>
+                    <li id="view-order" class="hidden"><a>View Order</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h2>House of Guillas Resto-Cafe</h2>
+            <p>Online Ordering and Reservation System</p>
+        </div>
+    </section>
+
+    <main class="container">
+        <section id="order" class="card-section">
+            <h3 class="section-title">Our Full Menu</h3>
+            
+            <div class="menu-tabs">
+                <button class="tab-btn active" onclick="filterMenu('all')">All</button>
+                <button class="tab-btn" onclick="filterMenu('appetizers')">Appetizers & Pasta</button>
+                <button class="tab-btn" onclick="filterMenu('deals')">Deals & Combos</button>
+                <button class="tab-btn" onclick="filterMenu('mains')">Main Meals</button>
+                <button class="tab-btn" onclick="filterMenu('desserts')">Desserts</button>
+            </div>
+
+            <div class="menu-grid" id="menu-container">
+            </div>
+
+            <div id="cart-summary" class="cart-box">
+                <h4>Order Summary</h4>
+                <ul id="cart-list"></ul>
+                <p class="total-line">Total: <span id="total-price">₱0.00</span></p>
+                <button class="btn-primary full-width" onclick="checkout()">Place Order</button>
+            </div>
+        </section>
+    </main>
+
+    <div class="order-modal-popup">
+        <div class="order-modal-panel">
+            <div class="close-container">
+                <button class="close-popup">Close</button>
+            </div>
+            <h2 class="reservation-label">Your order is on the way!</h2>
+            <h2 class="reservation-message">Here is your order number:</h2>
+            <h1 class="order-reservation-number">#00000</h1>
+            <p class="sub-label">
+                <span class="sub-label-name">Not set</span>
+                <span class="sub-label-contact">Not set</span>
+                <span class="sub-label-address">Not set</span>
+            </p>
+            <p class="sub-label">Please present this to the rider to get your order</p>
+            <p class="sub-label">You can take a screenshot or take note of your order number</p>
+        </div>
+    </div>
+    <div class="confirmation-popup">
+        <div class="confirmation-panel">
+            <div class="close-container-confirmation">
+                <button class="close-popup-confirmation">Close</button>
+            </div>
+
+            <h2 class="reservation-message">Hold on!</h2>
+            <h2 class="reservation-message">Before you place your order, please put your name, contact number, and delivery address</h2>
+            <input type="text" class="delivery-name confirm-inputs" placeholder="Juan D. Cruz"> 
+            <p class="sub-label">The name will be used by our delivery staff to confirm your name</p> 
+            <input type="text" class="delivery-contact confirm-inputs" placeholder="e.g. 09123456789" maxlength="11"> 
+            <p class="sub-label">The contact number will be used by our delivery staff to contact you whenever the rider has reached the destination</p>
+            <input type="text" class="delivery-address confirm-inputs" placeholder="House No./Subd/Barangay/City/Municipality"> 
+            <p class="sub-label">The address will be used by our delivery staff to locate the delivery location</p> 
+            <button class="btn-confirm">Confirm</button>
+        </div>
+    </div>
+
+    <script src="js/script.js?v=1"></script>
+</body>
+</html>
