@@ -550,6 +550,34 @@ app.get('/admin/sales-report', (req, res) => {
     });
 });
 
+// Route to get a specific user's order history
+app.get('/admin/user-history/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    const query = `
+        SELECT 
+            order_number, 
+            total_price, 
+            created_at, 
+            status, 
+            cart_list 
+        FROM food_orders 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC
+    `;
+    
+    // Use db.all (for multiple rows) with a callback to match sqlite3
+    db.all(query, [userId], (err, rows) => {
+        if (err) {
+            console.error('Database error for User ID ' + userId + ':', err.message);
+            return res.status(500).json({ error: 'Failed to fetch user history' });
+        }
+        
+        // rows will be an empty array [] if no orders are found
+        res.json(rows || []);
+    });
+});
+
 app.delete('/food/:id', (req, res) => {
     const id = req.params.id;
 
