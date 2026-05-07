@@ -11,7 +11,21 @@ const db = new sqlite3.Database("./food.db", (err) => {
 
 // SQL to alter table
 const sql = `
-INSERT INTO admin_accounts (username, email, password) VALUES ('admin-guillas', 'admin-guillas@gmail.com', 'password123');
+CREATE TABLE reservations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,               -- The Foreign Key
+    full_name TEXT NOT NULL,
+    reservation_date TEXT NOT NULL,
+    RESERVATION_TIME TEXT NOT NULL,
+    guests TEXT,
+    CONTACT_NUMBER TEXT,
+    RESERVATION_ID TEXT,                    -- Your custom unique ID (e.g., RSVN-123)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Defining the relationship
+    FOREIGN KEY (user_id) REFERENCES user_accounts(user_id) 
+        ON DELETE CASCADE
+);
 `;
 
 // Execute query

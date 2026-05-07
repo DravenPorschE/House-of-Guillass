@@ -25,7 +25,8 @@
 
                         <ul class="options-list">
                             <li id="order"><a href="../index.html#order">Order Food</a></li>
-                            <li id="reserve"><a href="../pages/table_reserve_form.html">Reservation</a></li>
+                            <li id="reserve"><a href="../pages/table_reserve_form.html">Reservation</a></li>    
+                            <li id="view-reservation" class="hidden"><a>View Reservation</a></li>
                             <li id="view-order" class="hidden"><a>View Order</a></li>
                         </ul>
                     </li>
@@ -40,6 +41,7 @@
                     <li id="order"><a href="../index.html#order">Order Food</a></li>
                     <li id="reserve"><a href="pages/table_reserve_form.html" class="active">Reservation</a></li>
                     <li id="view-order" class="hidden"><a>View Order</a></li>
+                    <li id="view-reservation" class="hidden"><a>View Reservation</a></li>
                     <li id="account"><a href="../pages/account-creation.html">Account</a></li>
                 </ul>
             </nav>
@@ -69,7 +71,15 @@
                     <label>Email</label>
                 </div>
                 <div class="input-box">
-                    <input id="phone-input" type="tel" placeholder=" " maxlength="11" required>
+                    <input 
+                        id="phone-input"
+                        type="tel"
+                        placeholder=" "
+                        maxlength="11"
+                        pattern="09[0-9]{9}"
+                        inputmode="numeric"
+                        required
+                    >
                     <label>Phone number</label>
                 </div>
                 <div class="input-box">
@@ -157,6 +167,76 @@
             </p>
             <p class="sub-label">Please present this to the rider to get your order</p>
             <p class="sub-label">You can take a screenshot or take note of your order number</p>
+        </div>
+    </div>
+
+    <div class="view-reservation-popup">
+        <div class="reservation-view-panel">
+
+            <div class="rp-top-bar">
+                <h2 class="reservation-label">Table Reservation</h2>
+                <button class="close-reservation-popup">×</button>
+            </div>
+
+            <div class="rp-body">
+                <div class="rp-number-wrap">
+                    <div class="reservation-message">Reservation Number</div>
+                    <div class="view-reservation-number">#0000</div>
+                </div>
+
+                <div class="rp-rows">
+                    <div class="rp-row">
+                        <div class="rp-row-icon">
+                            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div>
+                            <div class="rp-row-label">Guest Name</div>
+                            <div class="rp-row-value reservation-name"></div>
+                        </div>
+                    </div>
+                    <div class="rp-row">
+                        <div class="rp-row-icon">
+                            <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2C7.163 21 3 16.837 3 6a2 2 0 0 1 2-2z"/></svg>
+                        </div>
+                        <div>
+                            <div class="rp-row-label">Contact</div>
+                            <div class="rp-row-value reservation-contact"></div>
+                        </div>
+                    </div>
+                    <div class="rp-row">
+                        <div class="rp-row-icon">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        </div>
+                        <div>
+                            <div class="rp-row-label">Date</div>
+                            <div class="rp-row-value reservation-date"></div>
+                        </div>
+                    </div>
+                    <div class="rp-row">
+                        <div class="rp-row-icon">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                        </div>
+                        <div>
+                            <div class="rp-row-label">Time</div>
+                            <div class="rp-row-value reservation-time"></div>
+                        </div>
+                    </div>
+                    <div class="rp-row">
+                        <div class="rp-row-icon">
+                            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div>
+                            <div class="rp-row-label">Guests</div>
+                            <div class="rp-row-value reservation-guests"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rp-footer">
+                <button class="rp-done-btn close-reservation-popup">Done</button>
+            </div>
+
         </div>
     </div>
 

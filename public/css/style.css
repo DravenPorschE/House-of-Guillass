@@ -64,20 +64,90 @@ header .container {
 
 /* Hero */
 .hero {
-    height: 450px;
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                url('../assets/images/bg.jpg');
-    background-size: cover;
-    background-position: center;
-    color: white;
+    position: relative;
+    height: 460px;
+    background: linear-gradient(to bottom, rgba(8,14,10,0.55) 0%, rgba(8,14,10,0.78) 100%),
+                url('../assets/images/bg.jpg') center/cover no-repeat;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
-    text-align: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.hero h2 { font-size: 2.8rem; margin-bottom: 15px; }
+.hero::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: rgba(197,160,89,0.35);
+}
+
+.hero-inner { text-align: center; padding: 0 24px; max-width: 640px; }
+
+.hero-eyebrow {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: #c5a059; margin-bottom: 16px;
+}
+
+.hero h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px; font-weight: 500;
+    color: #fff; line-height: 1.1; margin-bottom: 12px;
+}
+
+.hero h2 em { font-style: italic; color: #c5a059; }
+
+.hero-subtitle {
+    font-size: 14px; font-weight: 300;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: rgba(255,255,255,0.55); margin-bottom: 36px;
+}
+
+.hero-divider {
+    width: 40px; height: 1px;
+    background: rgba(197,160,89,0.5);
+    margin: 0 auto 28px;
+}
+
+.hero-info { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+
+.hero-info-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: rgba(255,255,255,0.65);
+}
+
+.hero-icon {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    color: #c5a059;
+}
+
+.hero-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px;
+    padding: 7px 16px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.hero-info-fb {
+    cursor: pointer;
+    background: rgba(197,160,89,0.1);
+    border-color: rgba(197,160,89,0.3);
+    color: #c5a059;
+}
+
+.hero-info-fb:hover {
+    background: rgba(197,160,89,0.2);
+    border-color: rgba(197,160,89,0.55);
+}
 
 /* Menu Tabs */
 .menu-tabs {
@@ -410,6 +480,176 @@ footer { background: var(--dark); color: #777; text-align: center; padding: 30px
 
 #view-mobile {
     display: none;
+}
+.view-reservation-popup {
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: rgba(8,14,10,0.72);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.reservation-view-panel {
+    background: #0f1a13;
+    border: 1px solid rgba(197,160,89,0.22);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 380px;
+    overflow: hidden;
+}
+
+.rp-top-bar {
+    background: rgba(197,160,89,0.08);
+    border-bottom: 1px solid rgba(197,160,89,0.18);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reservation-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #c5a059;
+    margin: 0;
+}
+
+.close-reservation-popup {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid rgba(197,160,89,0.25);
+    background: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.45);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+}
+
+.close-reservation-popup:hover {
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+}
+
+.rp-body {
+    padding: 24px 22px 20px;
+}
+
+.rp-number-wrap {
+    text-align: center;
+    margin-bottom: 22px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(197,160,89,0.12);
+}
+
+.reservation-message {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    font-weight: 400;
+    margin: 0 0 6px;
+}
+
+.view-reservation-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 58px;
+    font-weight: 500;
+    color: #c5a059;
+    line-height: 1;
+    margin: 0;
+    text-align: center;
+}
+
+.rp-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.rp-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.rp-row:last-child { border-bottom: none; }
+
+.rp-row-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(197,160,89,0.1);
+    border: 1px solid rgba(197,160,89,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.rp-row-icon svg {
+    width: 15px;
+    height: 15px;
+    stroke: #c5a059;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.rp-row-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.28);
+    margin-bottom: 2px;
+}
+
+.rp-row-value {
+    font-size: 13px;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.4;
+}
+
+.rp-footer {
+    padding: 0 22px 22px;
+}
+
+.rp-done-btn {
+    width: 100%;
+    padding: 11px;
+    background: rgba(197,160,89,0.14);
+    border: 1px solid rgba(197,160,89,0.4);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #c5a059;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.rp-done-btn:hover {
+    background: rgba(197,160,89,0.24);
+    border-color: rgba(197,160,89,0.6);
+}
+
+@media (max-width: 700px) {
+    .view-reservation-popup { padding: 15px; }
+    .view-reservation-number { font-size: 44px; }
 }
 
 @media (max-width: 700px) {

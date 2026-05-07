@@ -150,21 +150,61 @@ app.patch('/food-orders/:id/status', (req, res) => {
 });
 
 app.post('/reservation', (req, res) => {
-    const { reservation_id, full_name, contact_number, reservation_date, guests, reservation_time } = req.body;
 
-    if (!full_name || !reservation_date || !guests || !contact_number || !reservation_id || !reservation_time) {
-        return res.status(400).json({ error: "Missing fields" });
+    const {
+        user_id,
+        reservation_id,
+        full_name,
+        contact_number,
+        reservation_date,
+        guests,
+        reservation_time
+    } = req.body;
+
+    // Validation
+    if (
+        !user_id ||
+        !full_name ||
+        !reservation_date ||
+        !guests ||
+        !contact_number ||
+        !reservation_id ||
+        !reservation_time
+    ) {
+        return res.status(400).json({
+            error: "Missing fields"
+        });
     }
 
     db.run(
         `INSERT INTO reservations 
-        (reservation_id, full_name, contact_number, reservation_date, guests, reservation_time)
-        VALUES (?, ?, ?, ?, ?, ?)`,
-        [reservation_id, full_name, contact_number, reservation_date, guests, reservation_time],
+        (
+            user_id,
+            reservation_id,
+            full_name,
+            contact_number,
+            reservation_date,
+            guests,
+            reservation_time
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+            user_id,
+            reservation_id,
+            full_name,
+            contact_number,
+            reservation_date,
+            guests,
+            reservation_time
+        ],
         function (err) {
+
             if (err) {
                 console.error(err);
-                return res.status(500).json({ error: err.message });
+
+                return res.status(500).json({
+                    error: err.message
+                });
             }
 
             res.json({
@@ -176,30 +216,68 @@ app.post('/reservation', (req, res) => {
 });
 
 app.post("/create-account", (req, res) => {
-    // 1. Pull the new fields from req.body
-    const { full_name, phone_number, username, email, password } = req.body;
 
-    // 2. Basic validation
-    if (!username || !email || !password || !full_name || !phone_number) {
-        return res.status(400).json({ error: "All fields are required" });
+    const {
+        full_name,
+        phone_number,
+        username,
+        email,
+        password
+    } = req.body;
+
+    // Basic validation
+    if (
+        !username ||
+        !email ||
+        !password ||
+        !full_name ||
+        !phone_number
+    ) {
+        return res.status(400).json({
+            error: "All fields are required"
+        });
     }
 
-    // 3. Updated SQL query to include the new columns
-    const sql = `INSERT INTO user_accounts (full_name, phone_number, username, email, password) 
-                 VALUES (?, ?, ?, ?, ?)`;
-    
-    db.run(sql, [full_name, phone_number, username, email, password], function (err) {
-        if (err) {
-            console.error(err.message);
-            // This usually happens if the email or username is already taken
-            return res.status(500).json({ error: "Account creation failed. Email or Username might already exist." });
-        }
-        
-        res.json({ 
-            message: "Account created successfully", 
-            user_id: this.lastID 
+    // ✅ Philippine phone validation
+    // Must:
+    // - start with 09
+    // - contain only numbers
+    // - be exactly 11 digits
+
+    const phoneRegex = /^09\d{9}$/;
+
+    if (!phoneRegex.test(phone_number)) {
+        return res.status(400).json({
+            error: "Invalid Philippine phone number"
         });
-    });
+    }
+
+    // Insert account
+    const sql = `
+        INSERT INTO user_accounts
+        (full_name, phone_number, username, email, password)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+
+    db.run(
+        sql,
+        [full_name, phone_number, username, email, password],
+        function (err) {
+
+            if (err) {
+                console.error(err.message);
+
+                return res.status(500).json({
+                    error: "Account creation failed. Email or Username might already exist."
+                });
+            }
+
+            res.json({
+                message: "Account created successfully",
+                user_id: this.lastID
+            });
+        }
+    );
 });
 
 app.post("/login", (req, res) => {
@@ -402,6 +480,73 @@ app.get('/admin/staff-history/:staffId', (req, res) => {
         
         // Success: 'rows' will now contain 'ORDER_NUMBER'
         res.json(rows);
+    });
+});
+
+app.get("/latest-reservation/:userId", (req, res) => {
+
+    const userId = req.params.userId;
+
+    const sql = `
+        SELECT *
+        FROM reservations
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+    `;
+
+    db.get(sql, [userId], (err, row) => {
+
+        if (err) {
+            return res.status(500).json({
+                error: err.message
+            });
+        }
+
+        res.json(row || null);
+    });
+});
+
+// 4. Get Sales Report (Monthly Totals + Daily Breakdown)
+app.get('/admin/sales-report', (req, res) => {
+    // We target the current month based on the server's time
+    const currentMonth = new Date().toISOString().slice(0, 7); // Format: "YYYY-MM"
+
+    const totalsSql = `
+        SELECT 
+            COUNT(id) as total_orders,
+            SUM(total_price) as total_revenue
+        FROM food_orders
+        WHERE status = 'delivered' 
+        AND strftime('%Y-%m', created_at) = ?
+    `;
+
+    const dailySql = `
+        SELECT 
+            CAST(strftime('%d', created_at) AS INTEGER) as day,
+            COUNT(id) as orders,
+            SUM(total_price) as revenue
+        FROM food_orders
+        WHERE status = 'delivered' 
+        AND strftime('%Y-%m', created_at) = ?
+        GROUP BY day
+        ORDER BY day ASC
+    `;
+
+    // Execute both queries
+    db.get(totalsSql, [currentMonth], (err, totals) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        db.all(dailySql, [currentMonth], (err, dailyRows) => {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // Format the response to match your expected shape
+            res.json({
+                total_orders: totals.total_orders || 0,
+                total_revenue: totals.total_revenue || 0,
+                daily: dailyRows || []
+            });
+        });
     });
 });
 

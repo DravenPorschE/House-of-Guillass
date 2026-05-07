@@ -21,8 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
         STATE STORAGE
     ----------------------------- */
     const savedOrder = JSON.parse(localStorage.getItem("lastOrder"));
+        const savedReservation = JSON.parse(
+        localStorage.getItem("lastReservation")
+    );
 
     const viewOrders = document.querySelectorAll("#view-order");
+    const viewReservations = document.querySelectorAll("#view-reservation");
+
     const number = document.querySelector(".reservation-number");
 
     const nameText = document.querySelector(".order-modal-popup .sub-label-name");
@@ -32,8 +37,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const orderPopup = document.querySelector(".order-modal-popup");
     const confirmPopup = document.querySelector(".confirmation-popup");
 
+    const deliveryContactInput = document.querySelector(".delivery-contact");
+
+    deliveryContactInput?.addEventListener("input", () => {
+
+        // numbers only
+        deliveryContactInput.value =
+            deliveryContactInput.value.replace(/\D/g, "");
+
+        // max 11 digits
+        deliveryContactInput.value =
+            deliveryContactInput.value.slice(0, 11);
+
+    });
+
     // Restore UI state
+    // Restore order UI
     if (savedOrder) {
+
         viewOrders.forEach(viewOrder => {
             viewOrder.classList.remove("hidden");
             viewOrder.classList.add("show-view-order");
@@ -42,6 +63,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (number) {
             number.textContent = `#${savedOrder.order_number}`;
         }
+    }
+
+    // Restore reservation UI
+    if (savedReservation) {
+
+        viewReservations.forEach(btn => {
+            btn.classList.remove("hidden");
+            btn.classList.add("show-view-order");
+        });
     }
 
     /* -----------------------------
@@ -68,16 +98,88 @@ document.addEventListener("DOMContentLoaded", () => {
     reservationForm?.addEventListener("submit", (e) => {
         e.preventDefault();
 
-        const reservationId = Math.floor(1000 + Math.random() * 9000); // generate ID client-side
+        const reservationId = Math.floor(1000 + Math.random() * 9000);
 
+        const userId = localStorage.getItem("user_id");
+
+        if (!userId) {
+            alert("You need to login first!");
+            window.location.href = "../pages/account-creation.html";
+            return;
+        }
+
+        // INPUTS
+        const fullNameInput = document.getElementById("res-name");
+        const contactInput = document.getElementById("res-contact");
+        const dateInput = document.getElementById("res-date");
+        const timeInput = document.getElementById("res-time");
+        const guestsInput = document.getElementById("res-guests");
+
+        // VALUES
+        const fullName = fullNameInput.value.trim();
+        const contactNumber = contactInput.value.trim();
+        const reservationDate = dateInput.value;
+        const reservationTime = timeInput.value;
+        const guests = guestsInput.value;
+
+        // ✅ REQUIRED VALIDATIONS
+        if (!fullName) {
+            alert("Please enter your full name!");
+            fullNameInput.focus();
+            return;
+        }
+
+        if (!contactNumber) {
+            alert("Please enter your contact number!");
+            contactInput.focus();
+            return;
+        }
+
+        // ✅ Philippine number validation
+        const phoneRegex = /^09\d{9}$/;
+
+        if (!phoneRegex.test(contactNumber)) {
+            alert("Please enter a valid Philippine phone number (09XXXXXXXXX)");
+            contactInput.focus();
+            return;
+        }
+
+        if (!reservationDate) {
+            alert("Please select a reservation date!");
+            dateInput.focus();
+            return;
+        }
+
+        if (!reservationTime) {
+            alert("Please select a reservation time!");
+            timeInput.focus();
+            return;
+        }
+
+        if (!guests || guests < 1) {
+            alert("Please enter number of guests!");
+            guestsInput.focus();
+            return;
+        }
+
+        // PAYLOAD
         const payload = {
-            reservation_id:   reservationId,
-            full_name:        document.getElementById("res-name").value.trim(),
-            contact_number:   document.getElementById("res-contact").value.trim(),
-            reservation_date: document.getElementById("res-date").value,
-            reservation_time: document.getElementById("res-time").value,
-            guests:           document.getElementById("res-guests").value
+            user_id: userId,
+            reservation_id: reservationId,
+            full_name: fullName,
+            contact_number: contactNumber,
+            reservation_date: reservationDate,
+            reservation_time: reservationTime,
+            guests: guests
         };
+
+        fetch("/reservation", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        })
 
         fetch("/reservation", {  // ✅ matches your backend route
             method: "POST",
@@ -90,12 +192,48 @@ document.addEventListener("DOMContentLoaded", () => {
                 return alert("Error: " + data.error);
             }
 
+            // SAVE RESERVATION
+            const savedReservation = {
+                reservation_id: data.reservation_id,
+                full_name: payload.full_name,
+                contact_number: payload.contact_number,
+                reservation_date: payload.reservation_date,
+                reservation_time: payload.reservation_time,
+                guests: payload.guests
+            };
+
+            localStorage.setItem(
+                "lastReservation",
+                JSON.stringify(savedReservation)
+            );
+
+            // Show View Reservation button
+            const viewReservations = document.querySelectorAll("#view-reservation");
+
+            viewReservations.forEach(btn => {
+                btn.classList.remove("hidden");
+                btn.classList.add("show-view-order");
+            });
+
             // Show success modal
             const modal = document.querySelector(".modal-popup");
             const reservationNumber = document.querySelector(".reservation-number");
 
             if (reservationNumber) {
                 reservationNumber.textContent = `#${data.reservation_id}`;
+            }
+
+            // OPTIONAL DETAILS
+            const modalDetails = document.querySelector(".reservation-details");
+
+            if (modalDetails) {
+                modalDetails.innerHTML = `
+                    <p>Name: ${payload.full_name}</p>
+                    <p>Contact: ${payload.contact_number}</p>
+                    <p>Date: ${payload.reservation_date}</p>
+                    <p>Time: ${payload.reservation_time}</p>
+                    <p>Guests: ${payload.guests}</p>
+                `;
             }
 
             if (modal) modal.style.display = "flex";
@@ -144,6 +282,67 @@ document.addEventListener("DOMContentLoaded", () => {
                 addressEl.textContent = `Delivery Address: ${address}`;
             }
         });
+    });
+
+    /* -----------------------------
+    VIEW RESERVATION
+    ----------------------------- */
+    const reservationPopup = document.querySelector(".view-reservation-popup");
+
+    viewReservations.forEach(btn => {
+        btn.addEventListener("click", async () => {
+
+            const userId = localStorage.getItem("user_id");
+
+            if (!userId) return;
+
+            try {
+
+                // FETCH LATEST RESERVATION
+                const res = await fetch(`/latest-reservation/${userId}`);
+
+                const reservation = await res.json();
+
+                if (!reservation) {
+                    alert("No reservation found!");
+                    return;
+                }
+
+                reservationPopup.style.display = "flex";
+
+                document.querySelector(".view-reservation-number").textContent =
+                    `#${reservation.RESERVATION_ID || reservation.reservation_id}`;
+
+                document.querySelector(".reservation-name").textContent =
+                    `Name: ${reservation.full_name}`;
+
+                document.querySelector(".reservation-contact").textContent =
+                    `Contact: ${reservation.CONTACT_NUMBER}`;
+
+                document.querySelector(".reservation-date").textContent =
+                    `Date: ${reservation.reservation_date}`;
+
+                document.querySelector(".reservation-time").textContent =
+                    `Time: ${reservation.RESERVATION_TIME}`;
+
+                document.querySelector(".reservation-guests").textContent =
+                    `Guests: ${reservation.guests}`;
+
+            } catch (err) {
+                console.error(err);
+                alert("Failed to fetch reservation");
+            }
+        });
+    });
+
+    document.querySelector(".close-reservation-popup")
+    ?.addEventListener("click", () => {
+
+        const popup = document.querySelector(".view-reservation-popup");
+
+        if (popup) {
+            popup.style.display = "none";
+        }
     });
 
     /* -----------------------------
@@ -332,51 +531,81 @@ document.addEventListener("DOMContentLoaded", () => {
     let isSubmitting = false;
 
     confirmBtn?.addEventListener("click", async () => {
-        if (isSubmitting) return; 
-        isSubmitting = true;
 
-        // Grab the ID from localStorage
-        const userId = localStorage.getItem("user_id");
-        
-        // Safety check: if no user is logged in, the database will reject it anyway
-        if (!userId) {
-            alert("You must be logged in to place an order!");
-            isSubmitting = false;
-            return;
-        }
+        if (isSubmitting) return;
 
+        // Inputs
         const deliveryNameInput = document.querySelector(".delivery-name");
         const deliveryContactInput = document.querySelector(".delivery-contact");
         const addressInput = document.querySelector(".delivery-address");
 
-        const deliveryName = deliveryNameInput?.value.trim() || "Guest";
-        const deliveryContact = deliveryContactInput?.value.trim() || "No Contact";
+        const deliveryName = deliveryNameInput?.value.trim();
+        const deliveryContact = deliveryContactInput?.value.trim();
         const address = addressInput?.value.trim();
 
+        // ✅ Required validations
+        if (!deliveryName) {
+            alert("Please enter your full name!");
+            deliveryNameInput?.focus();
+            return;
+        }
+
+        if (!deliveryContact) {
+            alert("Please enter your contact number!");
+            deliveryContactInput?.focus();
+            return;
+        }
+
+        // ✅ Philippine phone validation
+        const phoneRegex = /^09\d{9}$/;
+
+        if (!phoneRegex.test(deliveryContact)) {
+            alert("Please enter a valid Philippine phone number (09XXXXXXXXX)");
+            deliveryContactInput?.focus();
+            return;
+        }
+
         if (!address) {
-            alert("Please enter delivery address!");
-            isSubmitting = false;
+            alert("Please enter your delivery address!");
+            addressInput?.focus();
             return;
         }
 
+        // User validation
+        const userId = localStorage.getItem("user_id");
+
+        if (!userId) {
+            alert("You must be logged in to place an order!");
+            return;
+        }
+
+        // Pending order validation
         if (!pendingOrder) {
-            isSubmitting = false;
+            alert("No pending order found!");
             return;
         }
 
-        // 🔥 UPDATED PAYLOAD: Included user_id
+        isSubmitting = true;
+
+        // Payload
         const payload = {
-            user_id: userId, // The key to everything
+            user_id: userId,
             order_number: pendingOrder.order_number,
             cart_list: pendingOrder.cart_list,
             total_price: pendingOrder.total_price,
-            delivery_address: address // The only "new" info needed
+
+            delivery_name: deliveryName,
+            delivery_contact: deliveryContact,
+            delivery_address: address
         };
 
         try {
+
             const res = await fetch("/checkout", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -386,56 +615,63 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(result.error || "Failed to place order");
             }
 
-            // SAVE FIRST
-            // Inside your try block, after the fetch succeeds:
-            // Inside your confirmBtn try block...
+            // Save locally
             const saved = {
                 order_number: pendingOrder.order_number,
-                // Change these to match what your UI code looks for below
-                delivery_name: document.querySelector(".delivery-name")?.value || "User",
-                delivery_contact: document.querySelector(".delivery-contact")?.value || "N/A",
+                delivery_name: deliveryName,
+                delivery_contact: deliveryContact,
                 delivery_address: address
             };
 
-            // Now this will work because the names match!
-            localStorage.setItem("lastOrder", JSON.stringify(saved));
+            localStorage.setItem(
+                "lastOrder",
+                JSON.stringify(saved)
+            );
 
-            // Update the popup labels so the user sees their info
-            document.querySelectorAll(".sub-label-name").forEach(el => el.textContent = `Deliver To: ${saved.display_name}`);
-            document.querySelectorAll(".sub-label-contact").forEach(el => el.textContent = `Contact: ${saved.display_contact}`);
+            // Update popup
+            document.querySelectorAll(".sub-label-name").forEach(el => {
+                el.textContent = `Deliver To: ${deliveryName}`;
+            });
 
-            // SHOW ORDER POPUP
-            if (orderPopup) orderPopup.style.display = "flex";
+            document.querySelectorAll(".sub-label-contact").forEach(el => {
+                el.textContent = `Contact Number: ${deliveryContact}`;
+            });
 
-            const orderNumberEl = document.querySelector(".order-reservation-number");
-            if (orderNumberEl) {
-                orderNumberEl.textContent = `#${pendingOrder.order_number}`;
+            document.querySelectorAll(".sub-label-address").forEach(el => {
+                el.textContent = `Delivery Address: ${address}`;
+            });
+
+            // Show popup
+            if (orderPopup) {
+                orderPopup.style.display = "flex";
             }
 
-            // update UI labels
-            // Remove those "Update the popup labels" lines and just use these:
-            document.querySelectorAll(".sub-label-name").forEach(el => {
-                el.textContent = `Deliver To: ${saved.delivery_name}`;
-            });
-            document.querySelectorAll(".sub-label-contact").forEach(el => {
-                el.textContent = `Contact Number: ${saved.delivery_contact}`;
-            });
-            document.querySelectorAll(".sub-label-address").forEach(el => {
-                el.textContent = `Delivery Address: ${saved.delivery_address}`;
-            });
-            // Reset state
+            const orderNumberEl = document.querySelector(".order-reservation-number");
+
+            if (orderNumberEl) {
+                orderNumberEl.textContent =
+                    `#${pendingOrder.order_number}`;
+            }
+
+            // Reset
             confirmPopup.style.display = "none";
+
             cart = [];
             total = 0;
             pendingOrder = null;
+
             updateUI();
 
         } catch (err) {
+
             console.error(err);
             alert(err.message);
-        }
 
-        isSubmitting = false;
+        } finally {
+
+            isSubmitting = false;
+
+        }
     });
 
     // Function to auto-fill user details from account

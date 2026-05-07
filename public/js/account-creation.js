@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const accountView = document.querySelector(".account-view");
 
     const logoutBtn = document.getElementById("logout-btn");
+    
+    const phoneInput = document.getElementById("phone-input");
 
     function populateAccountView() {
         const storedData = localStorage.getItem("user_data");
@@ -28,6 +30,16 @@ document.addEventListener("DOMContentLoaded", () => {
         
         document.getElementById("user-initials").textContent = initials || "??";
     }
+
+    phoneInput?.addEventListener("input", () => {
+
+        // remove non-numbers
+        phoneInput.value = phoneInput.value.replace(/\D/g, "");
+
+        // limit to 11 digits
+        phoneInput.value = phoneInput.value.slice(0, 11);
+
+    });
 
     if(isLoggedIn) {
         accountCreationForm.style.display = "none";
@@ -84,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 1. Grab the elements
         const fullnameInput = document.getElementById("fullname-input");
-        const phoneInput = document.getElementById("phone-input");
         const usernameInput = document.getElementById("username-input");
         const emailInput = document.getElementById("email-input");
         const passwordInput = document.getElementById("password-input");
@@ -94,6 +105,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (passwordInput.value !== confirmPassInput.value) {
             alert("Password and Confirm Password are not the same");
             return; // Stop the function here so it doesn't call fetch
+        }
+
+        const phoneInput = document.getElementById("phone-input");
+        const phoneNumber = phoneInput.value.trim();
+
+        // ✅ Philippine phone validation
+        const phoneRegex = /^09\d{9}$/;
+
+        if (!phoneRegex.test(phoneNumber)) {
+            alert("Please enter a valid Philippine phone number (09XXXXXXXXX)");
+            return;
         }
 
         // 3. Prepare the data object
