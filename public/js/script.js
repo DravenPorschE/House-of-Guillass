@@ -1,11 +1,28 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // check if nakalogin na ba
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
 
+
+    const mobileQuery = window.matchMedia("(max-width: 700px)");
+
+    const viewMobile = document.getElementById("view-mobile");
+    const viewPC = document.getElementById("view-pc");
+
+    const menuIcons = document.querySelectorAll("#menu");
+    const navLists = document.querySelectorAll("#nav-list");
+
+    // ✅ Toggle menu (burger click)
+    menuIcons.forEach((menu, index) => {
+        menu.addEventListener("click", () => {
+            navLists[index].classList.toggle("show");
+        });
+    });
     /* -----------------------------
         STATE STORAGE
     ----------------------------- */
     const savedOrder = JSON.parse(localStorage.getItem("lastOrder"));
 
-    const viewOrder = document.getElementById("view-order");
+    const viewOrders = document.querySelectorAll("#view-order");
     const number = document.querySelector(".reservation-number");
 
     const nameText = document.querySelector(".order-modal-popup .sub-label-name");
@@ -17,10 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Restore UI state
     if (savedOrder) {
-        if (viewOrder) {
+        viewOrders.forEach(viewOrder => {
             viewOrder.classList.remove("hidden");
             viewOrder.classList.add("show-view-order");
-        }
+        });
 
         if (number) {
             number.textContent = `#${savedOrder.order_number}`;
@@ -30,12 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /* -----------------------------
         NAVIGATION
     ----------------------------- */
-    const menuBtn = document.getElementById("menu");
-    const navList = document.getElementById("nav-list");
-
-    menuBtn?.addEventListener("click", () => {
-        navList?.classList.toggle("show");
-    });
 
     document.getElementById("homepage")?.addEventListener("click", () => {
         window.location.href = "/index.html";
@@ -98,10 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
     /* -----------------------------
         VIEW ORDER POPUP (FIXED)
     ----------------------------- */
-    if (viewOrder) {
+    viewOrders.forEach(viewOrder => {
         viewOrder.addEventListener("click", () => {
+            const currentOrder = JSON.parse(localStorage.getItem("lastOrder"));
 
-            if (!orderPopup || !savedOrder) return;
+            if (!orderPopup || !currentOrder) return;
 
             orderPopup.style.display = "flex";
 
@@ -110,29 +122,29 @@ document.addEventListener("DOMContentLoaded", () => {
             const contactEl = document.querySelector(".sub-label-contact");
             const addressEl = document.querySelector(".sub-label-address");
 
+            // 🔥 MATCHING THE CASE IN YOUR LOCALSTORAGE:
             if (orderNumberEl) {
-                orderNumberEl.textContent = `#${savedOrder.order_number}`;
+                // Check for ORDER_NUMBER (caps) or order_number (small) just in case
+                orderNumberEl.textContent = `#${currentOrder.ORDER_NUMBER || currentOrder.order_number}`;
             }
 
             if (nameEl) {
-                nameEl.textContent = savedOrder.delivery_name
-                    ? `Delivery To: ${savedOrder.delivery_name}`
-                    : `Delivery To: Not set`;
+                const name = currentOrder.delivery_name || "Not set";
+                nameEl.textContent = `Delivery To: ${name}`;
             }
 
             if (contactEl) {
-                contactEl.textContent = savedOrder.delivery_contact
-                    ? `Contact Number: ${savedOrder.delivery_contact}`
-                    : `Contact Number: Not set`;
+                const contact = currentOrder.delivery_contact || "Not set";
+                contactEl.textContent = `Contact Number: ${contact}`;
             }
 
             if (addressEl) {
-                addressEl.textContent = savedOrder.delivery_address
-                    ? `Delivery Address: ${savedOrder.delivery_address}`
-                    : `Delivery Address: Not set`;
+                // Check for DELIVERY_ADDRESS (caps) or delivery_address (small)
+                const address = currentOrder.DELIVERY_ADDRESS || currentOrder.delivery_address || "Not set";
+                addressEl.textContent = `Delivery Address: ${address}`;
             }
         });
-    }
+    });
 
     /* -----------------------------
         MENU SYSTEM
@@ -295,6 +307,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return alert("Your cart is empty!");
         }
 
+        if(!isLoggedIn) {
+            alert("You need to login first!");
+            window.location.href = "../pages/account-creation.html";
+            return 
+        }
+
         const orderId = generateOrderId();
 
         pendingOrder = {
@@ -309,84 +327,142 @@ document.addEventListener("DOMContentLoaded", () => {
     /* -----------------------------
         CONFIRM ADDRESS + SUBMIT
     ----------------------------- */
-    document.querySelector(".btn-confirm")?.addEventListener("click", () => {
+    const confirmBtn = document.querySelector(".btn-confirm");
+
+    let isSubmitting = false;
+
+    confirmBtn?.addEventListener("click", async () => {
+        if (isSubmitting) return; 
+        isSubmitting = true;
+
+        // Grab the ID from localStorage
+        const userId = localStorage.getItem("user_id");
+        
+        // Safety check: if no user is logged in, the database will reject it anyway
+        if (!userId) {
+            alert("You must be logged in to place an order!");
+            isSubmitting = false;
+            return;
+        }
 
         const deliveryNameInput = document.querySelector(".delivery-name");
         const deliveryContactInput = document.querySelector(".delivery-contact");
         const addressInput = document.querySelector(".delivery-address");
 
-        const deliveryName = deliveryNameInput?.value.trim();
-        const deliveryContact = deliveryContactInput?.value.trim();
+        const deliveryName = deliveryNameInput?.value.trim() || "Guest";
+        const deliveryContact = deliveryContactInput?.value.trim() || "No Contact";
         const address = addressInput?.value.trim();
 
         if (!address) {
-            return alert("Please enter delivery address!");
+            alert("Please enter delivery address!");
+            isSubmitting = false;
+            return;
         }
 
-        if (!pendingOrder) return;
+        if (!pendingOrder) {
+            isSubmitting = false;
+            return;
+        }
 
+        // 🔥 UPDATED PAYLOAD: Included user_id
         const payload = {
+            user_id: userId, // The key to everything
             order_number: pendingOrder.order_number,
             cart_list: pendingOrder.cart_list,
             total_price: pendingOrder.total_price,
-            delivery_name: deliveryName || "Not Set",
-            delivery_contact: deliveryContact || "Not Set",
-            delivery_address: address || "Not set"
+            delivery_address: address // The only "new" info needed
         };
 
-        fetch("/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(() => {
+        try {
+            const res = await fetch("/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
 
+            const result = await res.json();
+
+            if (!res.ok) {
+                throw new Error(result.error || "Failed to place order");
+            }
+
+            // SAVE FIRST
+            // Inside your try block, after the fetch succeeds:
+            // Inside your confirmBtn try block...
+            const saved = {
+                order_number: pendingOrder.order_number,
+                // Change these to match what your UI code looks for below
+                delivery_name: document.querySelector(".delivery-name")?.value || "User",
+                delivery_contact: document.querySelector(".delivery-contact")?.value || "N/A",
+                delivery_address: address
+            };
+
+            // Now this will work because the names match!
+            localStorage.setItem("lastOrder", JSON.stringify(saved));
+
+            // Update the popup labels so the user sees their info
+            document.querySelectorAll(".sub-label-name").forEach(el => el.textContent = `Deliver To: ${saved.display_name}`);
+            document.querySelectorAll(".sub-label-contact").forEach(el => el.textContent = `Contact: ${saved.display_contact}`);
+
+            // SHOW ORDER POPUP
             if (orderPopup) orderPopup.style.display = "flex";
 
             const orderNumberEl = document.querySelector(".order-reservation-number");
-
             if (orderNumberEl) {
                 orderNumberEl.textContent = `#${pendingOrder.order_number}`;
             }
 
-            if(nameText) {
-                nameText.textContent = `Deliver To: ${deliveryName}`
-            }
-
-            if(contactText) {
-                contactText.textContent = `Contact Nunber: ${deliveryContact}`;
-            }
-
-            if (addressText) {
-                addressText.textContent = `Delivery Address: ${address}`;
-            }
-
-            if (viewOrder) {
-                viewOrder.classList.remove("hidden");
-                viewOrder.classList.add("show-view-order");
-            }
-
-            // SAVE ORDER
-            localStorage.setItem("lastOrder", JSON.stringify({
-                order_number: pendingOrder.order_number,
-                delivery_name: deliveryName,
-                delivery_contact: deliveryContact,
-                delivery_address: address
-            }));
-
+            // update UI labels
+            // Remove those "Update the popup labels" lines and just use these:
+            document.querySelectorAll(".sub-label-name").forEach(el => {
+                el.textContent = `Deliver To: ${saved.delivery_name}`;
+            });
+            document.querySelectorAll(".sub-label-contact").forEach(el => {
+                el.textContent = `Contact Number: ${saved.delivery_contact}`;
+            });
+            document.querySelectorAll(".sub-label-address").forEach(el => {
+                el.textContent = `Delivery Address: ${saved.delivery_address}`;
+            });
+            // Reset state
             confirmPopup.style.display = "none";
-
             cart = [];
             total = 0;
             pendingOrder = null;
             updateUI();
-        })
-        .catch(err => {
+
+        } catch (err) {
             console.error(err);
-            alert("Failed to place order.");
-        });
+            alert(err.message);
+        }
+
+        isSubmitting = false;
     });
+
+    // Function to auto-fill user details from account
+    async function autoFillUserDetails() {
+        const userId = localStorage.getItem("user_id");
+        if (!userId) return;
+
+        try {
+            const res = await fetch(`/fetch-account/${userId}`);
+            const user = await res.json();
+
+            if (res.ok) {
+                const nameInput = document.querySelector(".delivery-name");
+                const contactInput = document.querySelector(".delivery-contact");
+                
+                // Fill the inputs automatically
+                if (nameInput) nameInput.value = user.full_name;
+                if (contactInput) contactInput.value = user.phone_number;
+            }
+        } catch (err) {
+            console.error("Could not fetch user details", err);
+        }
+    }
+
+    // Call it immediately
+    autoFillUserDetails();
+    
 
     /* -----------------------------
         CLOSE BUTTONS (FIXED)
@@ -403,6 +479,34 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    async function syncActiveOrder() {
+        const userId = localStorage.getItem("user_id");
+        if (!userId) return;
+
+        try {
+            const res = await fetch(`/latest-active-order/${userId}`);
+            const activeOrder = await res.json();
+
+            if (activeOrder) {
+                const normalizedOrder = {
+                    order_number: activeOrder.ORDER_NUMBER || activeOrder.order_number,
+                    delivery_address: activeOrder.DELIVERY_ADDRESS || activeOrder.delivery_address,
+                    delivery_name: activeOrder.delivery_name,
+                    delivery_contact: activeOrder.delivery_contact,
+                    status: activeOrder.status
+                };
+                localStorage.setItem("lastOrder", JSON.stringify(normalizedOrder));
+            } else {
+                // If the order was finished or deleted, clean up
+                localStorage.removeItem("lastOrder");
+            }
+        } catch (err) {
+            console.error("Error syncing order status:", err);
+        }
+    }
+
+    
+
     document.querySelector(".close-popup-confirmation")?.addEventListener("click", () => {
         confirmPopup.style.display = "none";
     });
@@ -411,4 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
         INIT
     ----------------------------- */
     if (menuContainer) loadMenu();
+
+    // Execute this at the end of your DOMContentLoaded
+    syncActiveOrder();
 });

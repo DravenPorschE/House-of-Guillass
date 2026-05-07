@@ -12,13 +12,35 @@
     <header>
         <div class="container">
             <h1 class="logo">House of <span>Guillas</span></h1>
-            <nav>
+            <nav id="view-pc">
+                <svg id="menu" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
+                <ul id="nav-list">
+                    <li id="homepage"><a class="active" href="../index.html">Home</a></li>
+                    
+                    <li class="restaurant-dropdown">
+                        <div class="dropdown-controller" href="">
+                            <p>Restaurant</p>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill=""><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"/></svg>
+                        </div>
+
+                        <ul class="options-list">
+                            <li id="order"><a href="../index.html#order">Order Food</a></li>
+                            <li id="reserve"><a href="../pages/table_reserve_form.html">Reservation</a></li>
+                            <li id="view-order" class="hidden"><a>View Order</a></li>
+                        </ul>
+                    </li>
+
+                    <li id="user-account"><a href="../pages/account-creation.html">Account</a></li>
+                </ul>
+            </nav>
+            <nav id="view-mobile">
                 <svg id="menu" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
                 <ul id="nav-list">
                     <li id="homepage"><a href="../index.html">Home</a></li>
                     <li id="order"><a href="../index.html#order">Order Food</a></li>
                     <li id="reserve"><a href="pages/table_reserve_form.html" class="active">Reservation</a></li>
                     <li id="view-order" class="hidden"><a>View Order</a></li>
+                    <li id="account"><a href="../pages/account-creation.html">Account</a></li>
                 </ul>
             </nav>
         </div>
@@ -91,5 +113,6 @@
     </div>
 
     <script src="../js/script.js?v=1"></script>
+    <script src="../js/table-reserve-form.js"></script>
 </body>
 </html>

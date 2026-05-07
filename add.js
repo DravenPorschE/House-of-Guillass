@@ -11,8 +11,7 @@ const db = new sqlite3.Database("./food.db", (err) => {
 
 // SQL to alter table
 const sql = `
-  ALTER TABLE food_orders
-  ADD COLUMN delivery_name TEXT
+INSERT INTO admin_accounts (username, email, password) VALUES ('admin-guillas', 'admin-guillas@gmail.com', 'password123');
 `;
 
 // Execute query

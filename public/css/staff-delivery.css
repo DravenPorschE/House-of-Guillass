@@ -282,6 +282,184 @@ body {
     color: #aaa;
 }
 
+
+/* account-popup.css */
+
+.account-popup-container {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.65);
+}
+
+.account-popup {
+    background: #0f1a13;
+    border: 1px solid rgba(197, 160, 89, 0.25);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 340px;
+}
+
+/* Logo */
+.ap-logo {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+    text-align: center;
+    margin: 0 0 20px;
+}
+
+.ap-logo span {
+    color: #c5a059;
+}
+
+/* Tabs */
+.ap-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+    margin-bottom: 20px;
+}
+
+.ap-tab {
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+    position: relative;
+    transition: color 0.15s;
+}
+
+.ap-tab.active {
+    color: #c5a059;
+}
+
+.ap-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: #c5a059;
+    border-radius: 2px 2px 0 0;
+}
+
+/* Labels */
+.account-popup label {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 5px;
+}
+
+/* Inputs & Select */
+.account-popup input,
+.account-popup select {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #fff;
+    outline: none;
+    margin-bottom: 12px;
+    transition: border-color 0.15s;
+}
+
+.account-popup input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.account-popup input:focus,
+.account-popup select:focus {
+    border-color: rgba(197, 160, 89, 0.55);
+}
+
+.account-popup select {
+    appearance: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.account-popup select option {
+    background: #0f1a13;
+    color: #fff;
+}
+
+/* Buttons */
+.ap-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: rgba(197, 160, 89, 0.15);
+    border: 1px solid rgba(197, 160, 89, 0.45);
+    color: #c5a059;
+    margin-bottom: 8px;
+    transition: background 0.15s;
+}
+
+.ap-btn:hover {
+    background: rgba(197, 160, 89, 0.28);
+}
+
+.ap-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.ap-ghost:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Forgot link */
+.ap-forgot {
+    display: block;
+    text-align: right;
+    font-size: 11px;
+    color: rgba(197, 160, 89, 0.65);
+    text-decoration: none;
+    margin-top: -6px;
+    margin-bottom: 14px;
+}
+
+.ap-forgot:hover {
+    color: #c5a059;
+}
+
+/* Name row */
+.ap-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+} 
+
+#account-logout {
+    cursor: pointer;
+}
+
 /* ── Responsive ── */
 @media (max-width: 700px) {
 

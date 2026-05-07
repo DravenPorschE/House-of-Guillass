@@ -11,6 +11,25 @@
     <header>
         <div class="container">
             <h1 class="logo">House of <span>Guillas</span></h1>
+
+            <!-- <div style="display: flex;">
+                <ul id="nav-list">
+                    <li id="account-logout"><a>Logout</a></li>
+                </ul>
+            </div> -->
+
+            <nav id="view-pc">
+                <svg id="menu" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
+                <ul id="nav-list">
+                    <li id="account-logout"><a>Logout</a></li>
+                </ul>
+            </nav>
+            <nav id="view-mobile">
+                <svg id="menu" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
+                <ul id="nav-list">
+                    <li id="account-logout"><a>Logout</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
 
@@ -30,6 +49,56 @@
         </div>
     </div>
 
+    <div class="account-popup-container">
+        <div class="account-popup">
+            <div class="ap-tabs">
+                <button class="ap-tab active" onclick="apSwitch('login', this)">Sign In</button>
+                <button class="ap-tab" onclick="apSwitch('register', this)">Create Account</button>
+            </div>
+
+            <p class="ap-logo">House of <span>Guillas</span></p>
+
+            <!-- LOGIN -->
+            <div class="ap-panel" id="ap-login">
+                <label>Email</label>
+                <input id="login-username" type="email" placeholder="you@guillas.com">
+                <label>Password</label>
+                <input id="login-password" type="password" placeholder="••••••••">
+                <a class="ap-forgot" href="#">Forgot password?</a>
+                <button id="login-btn" class="ap-btn">Sign In</button>
+                <button class="ap-btn ap-ghost" onclick="apSwitch('register', document.querySelectorAll('.ap-tab')[1])">Create an account</button>
+            </div>
+
+            <!-- REGISTER -->
+            <div class="ap-panel" id="ap-register" style="display:none">
+                <label>Username</label>
+                <input id="username-input" type="text" placeholder="jguillas23">
+
+                <label>Full Name</label>
+                <input id="fullname-input" type="text" placeholder="Jean Guillas">
+
+                <label>Email</label>
+                <input id="email-input" type="email" placeholder="you@guillas.com">
+
+                <label>Phone Number</label>
+                <input id="phone-number-input" type="tel" placeholder="+63 000 000 0000">
+
+                <label>Password</label>
+                <input id="password-input" type="password" placeholder="Min. 8 characters">
+
+                <button id="signup-btn" class="ap-btn">Create Account</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/staff-delivery.js"></script>
+    <script>
+        function apSwitch(panel, tab) {
+            document.querySelectorAll('.ap-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.ap-panel').forEach(p => p.style.display = 'none');
+            tab.classList.add('active');
+            document.getElementById('ap-' + panel).style.display = 'block';
+        }
+    </script>
 </body>
 </html>
