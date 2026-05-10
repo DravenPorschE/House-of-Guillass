@@ -328,6 +328,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.querySelector(".reservation-guests").textContent =
                     `Guests: ${reservation.guests}`;
 
+                document.querySelector("rp-done-btn")?.addEventListener("click", () => {
+                    reservationPopup.style.display = "none";
+                });
+
             } catch (err) {
                 console.error(err);
                 alert("Failed to fetch reservation");
@@ -335,14 +339,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    document.querySelector(".close-reservation-popup")
-    ?.addEventListener("click", () => {
+    document.querySelectorAll(".close-reservation-popup").forEach(btn => {
 
-        const popup = document.querySelector(".view-reservation-popup");
+        btn.addEventListener("click", () => {
 
-        if (popup) {
-            popup.style.display = "none";
-        }
+            const popup = document.querySelector(".view-reservation-popup");
+
+            if (popup) {
+                popup.style.display = "none";
+            }
+        });
+
     });
 
     /* -----------------------------
@@ -383,33 +390,33 @@ document.addEventListener("DOMContentLoaded", () => {
         menuContainer.innerHTML = "";
 
         items.forEach(item => {
-            const div = document.createElement("div");
+            // ── AVAILABILITY CHECK ──
+            if (item.is_available == 0) return;       // hidden if marked unavailable
+            if (item.available_stock <= 0) return;    // hidden if out of stock
 
+            const div = document.createElement("div");
             div.classList.add("menu-item");
             div.classList.add(`category-${item.category.toLowerCase()}`);
 
             let dealHTML = "";
-
             if (item.is_food_deal == 1 && item.food_items) {
                 const itemsList = JSON.parse(item.food_items);
-
-                dealHTML = `
-                    <p class="deal-items">
-                        ${itemsList.join(", ")}
-                    </p>
-                `;
+                dealHTML = `<p class="deal-items">${itemsList.join(", ")}</p>`;
             }
 
-            div.innerHTML = `
-                <img class="menu-img"
-                    src="assets/images/${item.food_name.toLowerCase().replace(/\s+/g, "-")}.png">
+            // Show low stock warning badge if stock is low but > 0
+            const lowStockBadge = item.available_stock < 10
+                ? `<span class="low-stock-badge">Only ${item.available_stock} left!</span>`
+                : '';
 
+            div.innerHTML = `
+                <img class="menu-img" src="../${item.image_path}">
                 <div class="item-info">
                     <h4>${item.food_name}</h4>
                     ${dealHTML}
+                    ${lowStockBadge}
                     <span class="price">₱${parseFloat(item.food_price).toFixed(2)}</span>
                 </div>
-
                 <button class="btn-add">
                     <span class="btn-label">Add</span>
                     <span class="added-flash">✓ Added!</span>
@@ -417,15 +424,19 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             div.querySelector("button").addEventListener("click", (e) => {
-                // ripple
+                // ── STOCK CHECK ON ADD ──
+                const itemInCart = cart.filter(c => c.name === item.food_name).length;
+                if (itemInCart >= item.available_stock) {
+                    alert(`Sorry, only ${item.available_stock} of "${item.food_name}" available.`);
+                    return;
+                }
+
                 createRipple(e, e.currentTarget);
 
-                // added flash
                 const btn = e.currentTarget;
                 btn.classList.add("added");
                 setTimeout(() => btn.classList.remove("added"), 1200);
 
-                // your existing cart logic
                 cart.push({
                     name: item.food_name,
                     price: parseFloat(item.food_price)
@@ -689,7 +700,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // Fill the inputs automatically
                 if (nameInput) nameInput.value = user.full_name;
-                if (contactInput) contactInput.value = user.phone_number;
+                if (contactInput) {
+                    let phone = user.phone_number.toString().replace(/\D/g, "");
+
+                    // add 0 only if it doesn't already start with 0
+                    if (!phone.startsWith("0")) {
+                        phone = "0" + phone;
+                    }
+
+                    contactInput.value = phone;
+                }
             }
         } catch (err) {
             console.error("Could not fetch user details", err);

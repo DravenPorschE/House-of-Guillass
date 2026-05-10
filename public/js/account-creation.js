@@ -18,7 +18,15 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("display-fullname").textContent = user.full_name;
         document.getElementById("display-username").textContent = `@${user.username}`;
         document.getElementById("view-email").textContent = user.email;
-        document.getElementById("view-phone").textContent = user.phone;
+        let phone = (user.phone || user.phone_number || "")
+            .toString()
+            .replace(/\D/g, "");
+
+        if (phone && !phone.startsWith("0")) {
+            phone = "0" + phone;
+        }
+
+        document.getElementById("view-phone").textContent = phone;
 
         // Generate Initials (e.g., "John Doe" -> "JD")
         const initials = user.full_name
@@ -118,10 +126,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // 3. Prepare the data object
+        let normalizedPhone = phoneNumber.replace(/\D/g, "");
+
+        if (!normalizedPhone.startsWith("0")) {
+            normalizedPhone = "0" + normalizedPhone;
+        }
+
         const userData = {
             full_name: fullnameInput.value,
-            phone_number: phoneInput.value,
+            phone_number: normalizedPhone,
             username: usernameInput.value,
             email: emailInput.value,
             password: passwordInput.value

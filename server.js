@@ -12,6 +12,27 @@ const path = require("path");
 
 app.use(express.static(path.join(__dirname, "public")));
 
+const multer = require('multer');
+
+// Multer config: save to public/upload/, keep original extension
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'public/upload'));
+    },
+    filename: (req, file, cb) => {
+        // Use timestamp — req.body is NOT available here yet
+        cb(null, 'food-' + Date.now() + '.png');
+    }
+});
+
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'image/png') cb(null, true);
+        else cb(new Error('Only PNG files are allowed'));
+    }
+});
+
 app.get("/staff-delivery", (req, res) => {
     res.sendFile(path.join(__dirname, "public/pages", "staff_delivery.html"));
 });
@@ -88,40 +109,78 @@ app.post('/food', (req, res) => {
 });
 
 app.post('/checkout', (req, res) => {
-    // 1. Remove delivery_name and delivery_contact from destructuring
     const { user_id, cart_list, total_price, order_number, delivery_address } = req.body;
 
     if (!user_id) {
         return res.status(400).json({ error: "User ID is required to place an order" });
     }
 
-    // 2. Updated SQL: Removed delivery_name and delivery_contact columns and placeholders (?)
-    const sql = `INSERT INTO food_orders 
-        (user_id, cart_list, total_price, order_number, delivery_address, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`;
+    // Parse cart to get item names and quantities
+    let cartItems = [];
+    try {
+        cartItems = typeof cart_list === 'string' ? JSON.parse(cart_list) : cart_list;
+    } catch (e) {
+        return res.status(400).json({ error: "Invalid cart data" });
+    }
 
-    db.run(
-        sql,
-        [
-            user_id, 
-            JSON.stringify(cart_list), 
-            total_price,
-            order_number,
-            delivery_address, // Now we only save the specific address for this order
-            "pending"
-        ],
-        function (err) {
-            if (err) {
-                console.error("Checkout Error:", err.message);
-                return res.status(500).json({ error: "Failed to place order." });
-            }
+    // ── STOCK VALIDATION ──
+    // Count quantities per item in cart
+    const itemQuantities = {};
+    cartItems.forEach(item => {
+        itemQuantities[item.name] = (itemQuantities[item.name] || 0) + 1;
+    });
 
-            res.json({
-                message: "Order placed successfully",
-                order_id: this.lastID
+    // Check all items have sufficient stock before doing anything
+    const itemNames = Object.keys(itemQuantities);
+    let checkedCount = 0;
+    let stockError = null;
+
+    function checkStockThenOrder() {
+        if (checkedCount < itemNames.length && !stockError) {
+            const name = itemNames[checkedCount];
+            const qtyNeeded = itemQuantities[name];
+
+            db.get(`SELECT id, available_stock FROM food WHERE food_name = ? AND is_available = 1`, [name], (err, row) => {
+                if (err) { stockError = err.message; }
+                else if (!row) { stockError = `"${name}" is no longer available.`; }
+                else if (row.available_stock < qtyNeeded) {
+                    stockError = `Sorry, only ${row.available_stock} of "${name}" left in stock.`;
+                }
+                checkedCount++;
+                checkStockThenOrder();
+            });
+        } else if (stockError) {
+            return res.status(400).json({ error: stockError });
+        } else {
+            // ── ALL STOCK OK — place the order ──
+            const sql = `INSERT INTO food_orders 
+                (user_id, cart_list, total_price, order_number, delivery_address, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`;
+
+            db.run(sql, [user_id, JSON.stringify(cartItems), total_price, order_number, delivery_address, "pending"], function(err) {
+                if (err) {
+                    console.error("Checkout Error:", err.message);
+                    return res.status(500).json({ error: "Failed to place order." });
+                }
+
+                // ── DEDUCT STOCK for each item ──
+                itemNames.forEach(name => {
+                    const qty = itemQuantities[name];
+                    db.run(
+                        `UPDATE food SET available_stock = available_stock - ? WHERE food_name = ?`,
+                        [qty, name]
+                    );
+                });
+
+                res.json({
+                    message: "Order placed successfully",
+                    order_id: this.lastID
+                });
             });
         }
-    );
+    }
+
+    checkStockThenOrder();
 });
 
 app.patch('/food-orders/:id/status', (req, res) => {
@@ -576,6 +635,64 @@ app.get('/admin/user-history/:userId', (req, res) => {
         // rows will be an empty array [] if no orders are found
         res.json(rows || []);
     });
+});
+
+app.get('/admin/food/inventory', (req, res) =>{
+    const query = `
+    SELECT 
+        food_name,
+        food_price,
+        category,
+        is_food_deal,
+        food_items,
+        is_available
+    FROM food;
+    `;
+
+    db.all(query, (err, rows) => {
+        if (err) {
+            console.error('Database error for User ID ' + userId + ':', err.message);
+            return res.status(500).json({ error: 'Failed to fetch user history' });
+        }
+        
+        // rows will be an empty array [] if no orders are found
+        res.json(rows || []);
+    });
+});
+
+app.post('/admin/food/add', upload.single('image'), (req, res) => {
+    const { food_name, food_price, category, available_stock, is_food_deal, food_items, is_available } = req.body;
+    const image_path = req.file ? 'upload/' + req.file.filename : null;
+
+    const sql = `INSERT INTO food (food_name, food_price, category, available_stock, is_food_deal, food_items, is_available, image_path)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    db.run(sql, [food_name, food_price, category, available_stock, is_food_deal, food_items, is_available, image_path], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+// UPDATE food item (with optional image)
+app.post('/admin/food/update/:id', upload.single('image'), (req, res) => {
+    const id = req.params.id;
+    const { food_name, food_price, category, available_stock, is_available } = req.body;
+
+    // Only update image_path if a new file was uploaded
+    if (req.file) {
+        const image_path = 'upload/' + req.file.filename;
+        const sql = `UPDATE food SET food_name=?, food_price=?, category=?, available_stock=?, is_available=?, image_path=? WHERE id=?`;
+        db.run(sql, [food_name, food_price, category, available_stock, is_available, image_path, id], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true, image_path });
+        });
+    } else {
+        const sql = `UPDATE food SET food_name=?, food_price=?, category=?, available_stock=?, is_available=? WHERE id=?`;
+        db.run(sql, [food_name, food_price, category, available_stock, is_available, id], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true });
+        });
+    }
 });
 
 app.delete('/food/:id', (req, res) => {

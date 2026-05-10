@@ -647,6 +647,18 @@ footer { background: var(--dark); color: #777; text-align: center; padding: 30px
     border-color: rgba(197,160,89,0.6);
 }
 
+.low-stock-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    color: #9a3800;
+    background: rgba(232, 168, 56, 0.15);
+    border: 1px solid rgba(232, 168, 56, 0.4);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-bottom: 4px;
+}
+
 @media (max-width: 700px) {
     .view-reservation-popup { padding: 15px; }
     .view-reservation-number { font-size: 44px; }

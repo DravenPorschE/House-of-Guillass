@@ -137,8 +137,27 @@
             <input type="text" class="delivery-contact confirm-inputs" placeholder="e.g. 09123456789" maxlength="11"> 
             <p class="sub-label">The contact number will be used by our delivery staff to contact you whenever the rider has reached the destination</p>
             <input type="text" class="delivery-address confirm-inputs" placeholder="House No./Subd/Barangay/City/Municipality"> 
-            <p class="sub-label">The address will be used by our delivery staff to locate the delivery location</p> 
-            <button class="btn-confirm">Confirm</button>
+            <p class="sub-label">The address will be used by our delivery staff to locate the delivery location</p>
+
+            <!-- ── PAYMENT METHOD ── -->
+            <div class="payment-section">
+                <p class="payment-label">Payment Method</p>
+                <div class="payment-options">
+                    <label class="payment-option selected" id="pay-cod">
+                        <input type="radio" name="payment" value="cash_on_delivery" checked>
+                        <span class="payment-option-icon">💵</span>
+                        <div class="payment-option-text">
+                            <span class="payment-option-title">Cash on Delivery</span>
+                            <span class="payment-option-desc">Pay when your order arrives</span>
+                        </div>
+                        <span class="payment-option-check">✓</span>
+                    </label>
+                    <!-- More options can be added here later -->
+                </div>
+                <p class="sub-label">Please prepare the exact amount for a smoother transaction.</p>
+            </div>
+
+            <button class="btn-confirm">Confirm Order</button>
         </div>
     </div>
 
