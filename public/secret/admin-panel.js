@@ -75,7 +75,26 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(result.message || result.error);
         }
 
-        async function viewStaffHistory(staffId) {
+        
+
+        function closeModal() {
+            document.getElementById('historyModal').classList.remove('open');
+        }
+
+        document.getElementById('historyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        function adminLogout() {
+            localStorage.removeItem('admin_token');
+            window.location.href = 'admin-login.html';
+        }
+    
+    fetchUsers();
+    checkLowStock();
+});
+
+async function viewStaffHistory(staffId) {
             const container = document.getElementById('historyContainer');
             container.innerHTML = '<div class="loading-text">Loading history…</div>';
             document.getElementById('historyModal').classList.add('open');
@@ -115,24 +134,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 container.innerHTML = '<div class="error-text">Error loading history. Check console for details.</div>';
             }
         }
-
-        function closeModal() {
-            document.getElementById('historyModal').classList.remove('open');
-        }
-
-        document.getElementById('historyModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        function adminLogout() {
-            localStorage.removeItem('admin_token');
-            window.location.href = 'admin-login.html';
-        }
-    
-    fetchUsers();
-    checkLowStock();
-});
-
 
 async function checkLowStock() {
     try {
