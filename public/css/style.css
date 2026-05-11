@@ -67,7 +67,7 @@ header .container {
     position: relative;
     height: 460px;
     background: linear-gradient(to bottom, rgba(8,14,10,0.55) 0%, rgba(8,14,10,0.78) 100%),
-                url('../assets/images/bg.jpg') center/cover no-repeat;
+                url('../upload/bg.jpg') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
